@@ -1,4 +1,4 @@
-name: Build & Sign Android Release (Secure - Zero Hardcoded Passwords)
+name: Build & Sign Android Release (Automatic)
 
 on:
   push:
@@ -25,20 +25,33 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: 3. Grant execute permissions for Gradlew
-        run: chmod +x gradlew
-
-      - name: 4. Secure Dynamic Cloud Signing (Zero Leaked Credentials)
+      - name: 3. Locate Gradlew and grant execute permissions
         run: |
-          # Generate a single-use cryptographically secure random password per build run
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+          elif [ -f "./musicwtf-android/gradlew" ]; then
+            cd musicwtf-android && chmod +x ./gradlew
+          else
+            echo "Searching for gradlew..."
+            find . -name "gradlew" -exec chmod +x {} \;
+          fi
+
+      - name: 4. Generate Automatic Cloud Keystore
+        run: |
           SECURE_PASS=$(openssl rand -hex 16)
           echo "KEYSTORE_PASSWORD=$SECURE_PASS" >> $GITHUB_ENV
           echo "KEY_PASSWORD=$SECURE_PASS" >> $GITHUB_ENV
           echo "KEY_ALIAS=musicwtf" >> $GITHUB_ENV
           echo "KEYSTORE_FILE=release-upload-keystore.jks" >> $GITHUB_ENV
 
+          # Determine target directory
+          TARGET_DIR="app"
+          if [ -d "musicwtf-android/app" ]; then
+            TARGET_DIR="musicwtf-android/app"
+          fi
+
           keytool -genkey -v \
-            -keystore app/release-upload-keystore.jks \
+            -keystore "$TARGET_DIR/release-upload-keystore.jks" \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -alias musicwtf \
             -dname "CN=Music WTF, OU=Vibefy, O=Vibefy, L=Global, ST=Global, C=US" \
@@ -46,16 +59,21 @@ jobs:
             -keypass "$SECURE_PASS"
 
       - name: 5. Build & Sign Release APK & AAB
-        run: ./gradlew assembleRelease bundleRelease --stacktrace
+        run: |
+          if [ -f "./gradlew" ]; then
+            ./gradlew assembleRelease bundleRelease --stacktrace
+          elif [ -f "./musicwtf-android/gradlew" ]; then
+            cd musicwtf-android && ./gradlew assembleRelease bundleRelease --stacktrace
+          fi
 
       - name: 6. Upload Signed Release APK (Ready to Install)
         uses: actions/upload-artifact@v4
         with:
           name: Signed-Release-APK
-          path: app/build/outputs/apk/release/*.apk
+          path: "**/app/build/outputs/apk/release/*.apk"
 
       - name: 7. Upload Release AAB (Play Store Bundle)
         uses: actions/upload-artifact@v4
         with:
           name: Release-AAB-PlayStore
-          path: app/build/outputs/bundle/release/*.aab
+          path: "**/app/build/outputs/bundle/release/*.aab"
