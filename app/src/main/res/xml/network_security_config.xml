@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Standard strict HTTPS enforce for all app API & CDN traffic -->
-    <base-config cleartextTrafficPermitted="false">
+    <!-- 
+      Universal Base Config:
+      Permits cleartext HTTP traffic dynamically for ALL external creator vibe-sites.
+      Zero hardcoded creator domain names — any creator site works automatically!
+    -->
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
     </base-config>
 
-    <!-- Specific domain config for music-wtf.vercel.app -->
+    <!-- Strict HTTPS enforcement for primary app domain -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">music-wtf.vercel.app</domain>
         <domain includeSubdomains="true">vercel.app</domain>
-    </domain-config>
-
-    <!-- Opt-in domain config for creator vibe-sites that may still run legacy http assets -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">runable.site</domain>
     </domain-config>
 </network-security-config>

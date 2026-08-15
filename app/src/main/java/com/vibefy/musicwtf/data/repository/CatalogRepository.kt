@@ -38,7 +38,7 @@ class CatalogRepository @Inject constructor(
             if (response.isSuccessful) {
                 val jsonStr = response.body?.string()
                 if (!jsonStr.isNullOrBlank()) {
-                    val parsed = json.decodeFromString<List<PlaylistEntry>>(jsonStr)
+                    val parsed = json.decodeFromString<List<PlaylistEntry>>(jsonStr).distinctBy { it.id }
                     cachedPlaylists = parsed
                     emit(parsed)
                     return@flow
@@ -50,7 +50,7 @@ class CatalogRepository @Inject constructor(
 
         // 2. Fallback to local bundled playlists.json asset
         val jsonStr = context.assets.open("playlists.json").bufferedReader().use { it.readText() }
-        val parsed = json.decodeFromString<List<PlaylistEntry>>(jsonStr)
+        val parsed = json.decodeFromString<List<PlaylistEntry>>(jsonStr).distinctBy { it.id }
         cachedPlaylists = parsed
         emit(parsed)
     }.flowOn(Dispatchers.IO)
