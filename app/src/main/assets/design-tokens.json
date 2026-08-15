@@ -1,0 +1,74 @@
+{
+  "colors": {
+    "night": "#eef6fc",
+    "night2": "#ffffff",
+    "night3": "#cfe3f2",
+    "moon": "#12212e",
+    "moonDim": "#4d6578",
+    "lamp": "#2489d3",
+    "lampSoft": "rgba(36, 137, 211, 0.14)",
+    "deckGradientStart": "#222733",
+    "deckGradientMid": "#151821",
+    "deckGradientEnd": "#0f121a",
+    "powerLedGreen": "#10b981",
+    "amber": "#f59e0b",
+    "cassetteSideLabel": "#38bdf8",
+    "offlineRed": "#ef4444",
+    "truckShadowRed": "#D62828"
+  },
+  "typography": {
+    "fontYatra": {
+      "family": "Yatra One",
+      "weights": [400],
+      "variable": "--font-yatra"
+    },
+    "fontMukta": {
+      "family": "Mukta",
+      "weights": [300, 400, 500, 600, 700],
+      "variable": "--font-mukta"
+    },
+    "fontMono": {
+      "family": "JetBrains Mono",
+      "weights": [400, 500, 700],
+      "variable": "--font-mono2"
+    }
+  },
+  "motion": {
+    "heroParallax": {
+      "duration": 0.5,
+      "ease": "power2.out"
+    },
+    "cardTilt": {
+      "maxDeg": 10,
+      "scale": 1.03,
+      "duration": 0.25,
+      "ease": "power2.out"
+    },
+    "cardReveal": {
+      "duration": 0.5,
+      "stagger": 0.04,
+      "ease": "back.out(1.2)"
+    },
+    "drawerSlide": {
+      "duration": 0.4,
+      "easing": "cubic-bezier(0.22, 1, 0.36, 1)"
+    },
+    "modalPop": {
+      "duration": 0.3,
+      "easing": "cubic-bezier(0.22, 1, 0.36, 1)"
+    },
+    "audioCrossfadeSec": 4
+  },
+  "categories": [
+    "All",
+    "Safar",
+    "Raat",
+    "Bachpan",
+    "Rozmarra",
+    "Dukaan",
+    "Kshetriya",
+    "Shaadi",
+    "Tyohar",
+    "Bhakti"
+  ]
+}
