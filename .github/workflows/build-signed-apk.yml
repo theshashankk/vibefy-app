@@ -53,6 +53,7 @@ jobs:
           if [ -d "musicwtf-android" ]; then
             cd musicwtf-android
           fi
+          gradle wrapper
           chmod +x gradlew
           ./gradlew assembleRelease --stacktrace
 
