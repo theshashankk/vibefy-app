@@ -26,11 +26,13 @@ android {
     applicationVariants.all {
         val variant = this
         variant.outputs.all {
-            val output = this as com.android.build.gradle.api.BaseVariantOutput
-            val appName = "MusicWTF"
-            val version = variant.versionName
-            val buildType = variant.buildType.name
-            output.outputFileName = "${appName}-v${version}-${buildType}.apk"
+            val output = this as? com.android.build.gradle.api.ApkVariantOutput
+            if (output != null) {
+                val appName = "MusicWTF"
+                val version = variant.versionName
+                val buildType = variant.buildType.name
+                output.outputFileName = "${appName}-v${version}-${buildType}.apk"
+            }
         }
     }
 
@@ -73,7 +75,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions { jvmTarget = "17" }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 
     buildFeatures {
         compose = true
