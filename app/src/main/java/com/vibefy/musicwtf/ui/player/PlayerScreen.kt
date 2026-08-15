@@ -353,7 +353,10 @@ private fun IosWebView(
                     javaScriptEnabled = true
                     domStorageEnabled = true
                     mediaPlaybackRequiresUserGesture = false
-                    mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                    mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                    allowFileAccess = false
+                    allowContentAccess = false
+                    safeBrowsingEnabled = true
                     setSupportMultipleWindows(false)
                     builtInZoomControls = false
                     displayZoomControls = false
