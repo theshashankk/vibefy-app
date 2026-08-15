@@ -22,6 +22,18 @@ android {
         buildConfigField("String", "BASE_URL", "\"https://music-wtf.vercel.app\"")
     }
 
+    // Custom Branded APK Filename: MusicWTF-v1.0.0-release.apk
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val appName = "MusicWTF"
+            val version = variant.versionName
+            val buildType = variant.buildType.name
+            output.outputFileName = "${appName}-v${version}-${buildType}.apk"
+        }
+    }
+
     signingConfigs {
         create("release") {
             val ksFile = System.getenv("KEYSTORE_FILE") ?: "release-upload-keystore.jks"

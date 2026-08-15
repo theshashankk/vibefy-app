@@ -44,6 +44,13 @@ cd "$SAVED" >/dev/null
 APP_NAME="Gradle"
 APP_BASE_NAME=`basename "$0"`
 
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 
@@ -75,5 +82,5 @@ fi
 # Determine wrapper classpath
 CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
 
-# Execute Gradle
-exec "$JAVACMD" "$@" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain
+# Execute Gradle with correct argument order (GradleWrapperMain before $@)
+exec "$JAVACMD" "-Dorg.gradle.appname=$APP_BASE_NAME" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"

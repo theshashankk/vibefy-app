@@ -1,4 +1,4 @@
-name: Build & Sign Android Release (Automatic)
+name: Build & Sign Android Release APK (Direct Download)
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-and-sign:
-    name: Build & Sign Release APK & AAB
+    name: Build & Sign Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +32,6 @@ jobs:
           elif [ -f "./musicwtf-android/gradlew" ]; then
             cd musicwtf-android && chmod +x ./gradlew
           else
-            echo "Searching for gradlew..."
             find . -name "gradlew" -exec chmod +x {} \;
           fi
 
@@ -44,7 +43,6 @@ jobs:
           echo "KEY_ALIAS=musicwtf" >> $GITHUB_ENV
           echo "KEYSTORE_FILE=release-upload-keystore.jks" >> $GITHUB_ENV
 
-          # Determine target directory
           TARGET_DIR="app"
           if [ -d "musicwtf-android/app" ]; then
             TARGET_DIR="musicwtf-android/app"
@@ -58,22 +56,16 @@ jobs:
             -storepass "$SECURE_PASS" \
             -keypass "$SECURE_PASS"
 
-      - name: 5. Build & Sign Release APK & AAB
+      - name: 5. Build & Sign Release APK
         run: |
           if [ -f "./gradlew" ]; then
-            ./gradlew assembleRelease bundleRelease --stacktrace
+            ./gradlew assembleRelease --stacktrace
           elif [ -f "./musicwtf-android/gradlew" ]; then
-            cd musicwtf-android && ./gradlew assembleRelease bundleRelease --stacktrace
+            cd musicwtf-android && ./gradlew assembleRelease --stacktrace
           fi
 
       - name: 6. Upload Signed Release APK (Ready to Install)
         uses: actions/upload-artifact@v4
         with:
-          name: Signed-Release-APK
+          name: MusicWTF-v1.0.0-Signed-APK
           path: "**/app/build/outputs/apk/release/*.apk"
-
-      - name: 7. Upload Release AAB (Play Store Bundle)
-        uses: actions/upload-artifact@v4
-        with:
-          name: Release-AAB-PlayStore
-          path: "**/app/build/outputs/bundle/release/*.aab"
