@@ -1,9 +1,15 @@
 package com.vibefy.musicwtf.ui.submit
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -12,23 +18,68 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vibefy.musicwtf.ui.theme.*
 
+private val CATEGORIES = listOf(
+    "Safar",
+    "Rozmarra",
+    "Bachpan",
+    "Dukaan",
+    "Kshetriya",
+    "Shaadi",
+    "Tyohar",
+    "Bhakti",
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubmitScreen(onDismiss: () -> Unit) {
-    var title by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    var siteName by remember { mutableStateOf("") }
     var siteUrl by remember { mutableStateOf("") }
-    var ownerHandle by remember { mutableStateOf("") }
-    var isSubmitted by remember { mutableStateOf(false) }
+    var ownerName by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("Dukaan") }
+    var categoryExpanded by remember { mutableStateOf(false) }
+
+    fun sendEmailSubmission() {
+        val subject = Uri.encode("[Gaane Playlist Submission] ${siteName.ifBlank { "New Playlist" }}")
+        val bodyText = """
+            Hi Shashank,
+
+            I would like to add a new retro playlist website to Gaane:
+
+            📻 Website / Playlist Name: $siteName
+            🔗 Website URL: $siteUrl
+            👤 Creator / Handle: $ownerName
+            🏷️ Category: $category
+
+            Thanks!
+        """.trimIndent()
+
+        val body = Uri.encode(bodyText)
+        val mailUri = Uri.parse("mailto:shashannxd@gmail.com?subject=$subject&body=$body")
+
+        val intent = Intent(Intent.ACTION_SENDTO, mailUri)
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback for devices without a default mail client
+            val genericIntent = Intent(Intent.ACTION_VIEW, mailUri)
+            context.startActivity(genericIntent)
+        }
+
+        onDismiss()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0x99000000)),
+            .background(Color(0x99000000))
+            .clickable { onDismiss() },
         contentAlignment = Alignment.BottomCenter,
     ) {
         Column(
@@ -36,78 +87,117 @@ fun SubmitScreen(onDismiss: () -> Unit) {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(24.dp),
+                .clickable(enabled = false) {} // Prevent click-through
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    "Submit Your Vibe-Site",
-                    fontFamily = YatraOne,
-                    fontSize = 22.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                Column {
+                    Text(
+                        "Add New Playlist 📻",
+                        fontFamily = YatraOne,
+                        fontSize = 22.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        "Submit your custom retro web playlist to Gaane.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                    )
+                }
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Default.Close, contentDescription = "Close")
                 }
             }
 
-            if (isSubmitted) {
-                Column(
-                    modifier = Modifier.padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+            // 1. Website / Playlist Name
+            OutlinedTextField(
+                value = siteName,
+                onValueChange = { siteName = it },
+                label = { Text("1. Website / Playlist Name *") },
+                placeholder = { Text("e.g. Cutting Shop") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            // 2. Website URL
+            OutlinedTextField(
+                value = siteUrl,
+                onValueChange = { siteUrl = it },
+                label = { Text("2. Website URL *") },
+                placeholder = { Text("e.g. https://cuttingshop.lol") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            // 3. Owner Name / Handle
+            OutlinedTextField(
+                value = ownerName,
+                onValueChange = { ownerName = it },
+                label = { Text("3. Owner Name / Handle *") },
+                placeholder = { Text("e.g. @chakra5027") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            // 4. Category Dropdown
+            ExposedDropdownMenuBox(
+                expanded = categoryExpanded,
+                onExpandedChange = { categoryExpanded = !categoryExpanded },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedTextField(
+                    value = category,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("4. Playlist Category *") },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                )
+                ExposedDropdownMenu(
+                    expanded = categoryExpanded,
+                    onDismissRequest = { categoryExpanded = false },
                 ) {
-                    Text("🎉", fontSize = 48.sp)
-                    Spacer(Modifier.height(12.dp))
-                    Text("Submission Received!", fontFamily = YatraOne, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                    Text("We'll review your micro-site and add it to the catalog.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(0.6f))
-                    Spacer(Modifier.height(20.dp))
-                    Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("Done") }
+                    CATEGORIES.forEach { cat ->
+                        DropdownMenuItem(
+                            text = { Text(cat) },
+                            onClick = {
+                                category = cat
+                                categoryExpanded = false
+                            }
+                        )
+                    }
                 }
-            } else {
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            // Submit Button
+            val canSubmit = siteName.isNotBlank() && siteUrl.isNotBlank() && ownerName.isNotBlank()
+
+            Button(
+                onClick = { sendEmailSubmission() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = canSubmit,
+                colors = ButtonDefaults.buttonColors(containerColor = Lamp),
+            ) {
+                Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(
-                    "Built a hand-crafted playlist player? Submit your website link below:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(0.7f),
+                    "Send to shashannxd@gmail.com",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
                 )
-
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Playlist Title") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                OutlinedTextField(
-                    value = siteUrl,
-                    onValueChange = { siteUrl = it },
-                    label = { Text("Website URL (e.g. https://myvibe.fun)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                OutlinedTextField(
-                    value = ownerHandle,
-                    onValueChange = { ownerHandle = it },
-                    label = { Text("Your Twitter/X Handle (e.g. @creator)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Button(
-                    onClick = { if (siteUrl.isNotBlank()) isSubmitted = true },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    enabled = siteUrl.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Lamp),
-                ) {
-                    Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Submit Vibe-Site", style = MaterialTheme.typography.titleMedium)
-                }
             }
         }
     }
