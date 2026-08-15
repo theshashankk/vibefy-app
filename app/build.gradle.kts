@@ -26,7 +26,7 @@ android {
     applicationVariants.all {
         val variant = this
         variant.outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val output = this as com.android.build.gradle.api.BaseVariantOutput
             val appName = "MusicWTF"
             val version = variant.versionName
             val buildType = variant.buildType.name
@@ -127,8 +127,10 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.media3.datasource.okhttp)
 
-    // WorkManager
+    // WorkManager & Hilt Integration
     implementation(libs.work.runtime.ktx)
+    implementation(libs.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // DataStore
     implementation(libs.datastore.preferences)

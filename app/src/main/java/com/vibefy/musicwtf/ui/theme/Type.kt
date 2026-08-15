@@ -2,33 +2,20 @@ package com.vibefy.musicwtf.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.vibefy.musicwtf.R
 
-// ── Font families matching the web app exactly ─────────────────────
+// ── Font families with system fallbacks ──────────────────────────────
 
-/** Yatra One — used for ALL headings, splash, playlist titles. Never deviate. */
-val YatraOne = FontFamily(
-    Font(R.font.yatra_one_regular, FontWeight.Normal)
-)
+/** Yatra One / Serif — used for headings, splash, playlist titles */
+val YatraOne = FontFamily.Serif
 
-/** Mukta — body text, descriptions, buttons, search, subtitles */
-val Mukta = FontFamily(
-    Font(R.font.mukta_light,     FontWeight.Light),
-    Font(R.font.mukta_regular,   FontWeight.Normal),
-    Font(R.font.mukta_medium,    FontWeight.Medium),
-    Font(R.font.mukta_semibold,  FontWeight.SemiBold),
-    Font(R.font.mukta_bold,      FontWeight.Bold),
-)
+/** Mukta / SansSerif — body text, descriptions, buttons, search, subtitles */
+val Mukta = FontFamily.SansSerif
 
-/** JetBrains Mono — handles, view counts, timers, mono labels */
-val JetBrainsMono = FontFamily(
-    Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
-    Font(R.font.jetbrains_mono_medium,  FontWeight.Medium),
-)
+/** JetBrains Mono / Monospace — handles, view counts, timers, mono labels */
+val JetBrainsMono = FontFamily.Monospace
 
 // ── Typography scale ───────────────────────────────────────────────
 val AppTypography = Typography(

@@ -53,7 +53,8 @@ jobs:
           if [ -d "musicwtf-android" ]; then
             cd musicwtf-android
           fi
-          gradle assembleRelease --stacktrace
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
 
       - name: 6. Upload Signed Release APK (Ready to Install)
         uses: actions/upload-artifact@v4

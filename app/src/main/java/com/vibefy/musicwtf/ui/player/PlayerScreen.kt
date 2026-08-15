@@ -370,9 +370,6 @@ private fun IosWebView(
                 isLongClickable = false
                 setOnLongClickListener { true }
 
-                // Disable text selection handles
-                isTextSelectionEnabled = false
-
                 webViewClient = object : WebViewClient() {
                     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                         onPageStarted()
