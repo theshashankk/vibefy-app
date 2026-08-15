@@ -24,12 +24,22 @@ android {
 
     signingConfigs {
         create("release") {
-            val ksFile = System.getenv("KEYSTORE_FILE") ?: "keystore.jks"
-            if (file(ksFile).exists()) {
+            val ksFile = System.getenv("KEYSTORE_FILE") ?: "release-upload-keystore.jks"
+            val envPass = System.getenv("KEYSTORE_PASSWORD")
+            val envAlias = System.getenv("KEY_ALIAS")
+            val envKeyPass = System.getenv("KEY_PASSWORD")
+
+            if (file(ksFile).exists() && !envPass.isNullOrBlank()) {
                 storeFile = file(ksFile)
-                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "musicwtf123"
-                keyAlias = System.getenv("KEY_ALIAS") ?: "musicwtf"
-                keyPassword = System.getenv("KEY_PASSWORD") ?: "musicwtf123"
+                storePassword = envPass
+                keyAlias = envAlias ?: "musicwtf"
+                keyPassword = envKeyPass ?: envPass
+            } else {
+                // Fallback to debug key if no custom release environment credentials exist
+                storeFile = signingConfigs.getByName("debug").storeFile
+                storePassword = signingConfigs.getByName("debug").storePassword
+                keyAlias = signingConfigs.getByName("debug").keyAlias
+                keyPassword = signingConfigs.getByName("debug").keyPassword
             }
         }
     }

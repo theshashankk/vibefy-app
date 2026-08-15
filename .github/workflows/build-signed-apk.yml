@@ -1,4 +1,4 @@
-name: Build & Sign Android Release (APK & AAB)
+name: Build & Sign Android Release (Secure - Zero Hardcoded Passwords)
 
 on:
   push:
@@ -28,31 +28,33 @@ jobs:
       - name: 3. Grant execute permissions for Gradlew
         run: chmod +x gradlew
 
-      - name: 4. Build Release APK & AAB
+      - name: 4. Secure Dynamic Cloud Signing (Zero Leaked Credentials)
+        run: |
+          # Generate a single-use cryptographically secure random password per build run
+          SECURE_PASS=$(openssl rand -hex 16)
+          echo "KEYSTORE_PASSWORD=$SECURE_PASS" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=$SECURE_PASS" >> $GITHUB_ENV
+          echo "KEY_ALIAS=musicwtf" >> $GITHUB_ENV
+          echo "KEYSTORE_FILE=release-upload-keystore.jks" >> $GITHUB_ENV
+
+          keytool -genkey -v \
+            -keystore app/release-upload-keystore.jks \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias musicwtf \
+            -dname "CN=Music WTF, OU=Vibefy, O=Vibefy, L=Global, ST=Global, C=US" \
+            -storepass "$SECURE_PASS" \
+            -keypass "$SECURE_PASS"
+
+      - name: 5. Build & Sign Release APK & AAB
         run: ./gradlew assembleRelease bundleRelease --stacktrace
 
-      - name: 5. Decode Release Keystore (if secret provided)
-        if: "${{ secrets.KEYSTORE_BASE64 != '' }}"
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/release-upload-keystore.jks
-
-      - name: 6. Sign Release APK (if secret provided)
-        if: "${{ secrets.KEYSTORE_BASE64 != '' }}"
-        uses: rstepanyan/sign-android-release-action@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
-      - name: 7. Upload Signed Release APK to GitHub Artifacts
+      - name: 6. Upload Signed Release APK (Ready to Install)
         uses: actions/upload-artifact@v4
         with:
           name: Signed-Release-APK
           path: app/build/outputs/apk/release/*.apk
 
-      - name: 8. Upload Release AAB (Google Play Store Bundle)
+      - name: 7. Upload Release AAB (Play Store Bundle)
         uses: actions/upload-artifact@v4
         with:
           name: Release-AAB-PlayStore
