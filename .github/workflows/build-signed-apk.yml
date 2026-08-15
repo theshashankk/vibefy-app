@@ -1,4 +1,4 @@
-name: Build & Sign Android Release APK (Direct Download)
+name: Build & Sign Android Release APK (Automatic)
 
 on:
   push:
@@ -23,17 +23,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: 3. Locate Gradlew and grant execute permissions
-        run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-          elif [ -f "./musicwtf-android/gradlew" ]; then
-            cd musicwtf-android && chmod +x ./gradlew
-          else
-            find . -name "gradlew" -exec chmod +x {} \;
-          fi
+      - name: 3. Setup Gradle Engine
+        uses: gradle/actions/setup-gradle@v3
 
       - name: 4. Generate Automatic Cloud Keystore
         run: |
@@ -58,11 +50,10 @@ jobs:
 
       - name: 5. Build & Sign Release APK
         run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleRelease --stacktrace
-          elif [ -f "./musicwtf-android/gradlew" ]; then
-            cd musicwtf-android && ./gradlew assembleRelease --stacktrace
+          if [ -d "musicwtf-android" ]; then
+            cd musicwtf-android
           fi
+          gradle assembleRelease --stacktrace
 
       - name: 6. Upload Signed Release APK (Ready to Install)
         uses: actions/upload-artifact@v4
