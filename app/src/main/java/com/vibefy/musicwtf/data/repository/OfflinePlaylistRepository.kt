@@ -80,10 +80,10 @@ class OfflinePlaylistRepository @Inject constructor(
      * Schedule periodic background sync worker to check for remote playlist changes.
      */
     fun schedulePeriodicSync() {
-        val syncRequest = PeriodicWorkRequestBuilder<PlaylistSyncWorker>(12, TimeUnit.HOURS)
+        val syncRequest = PeriodicWorkRequestBuilder<PlaylistSyncWorker>(24, TimeUnit.HOURS)
             .setConstraints(
                 Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .setRequiredNetworkType(NetworkType.UNMETERED)
                     .build()
             )
             .build()

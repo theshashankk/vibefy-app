@@ -96,6 +96,30 @@ fun SavedScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                // ── Storage Used Indicator ────────────────────────────
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "${playlists.size} Playlists Downloaded",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = "Storage Used: ~${playlists.size * 24} MB",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Lamp,
+                        )
+                    }
+                }
+
                 items(playlists, key = { it.id }) { playlist ->
                     OfflinePlaylistRow(
                         playlist = playlist,

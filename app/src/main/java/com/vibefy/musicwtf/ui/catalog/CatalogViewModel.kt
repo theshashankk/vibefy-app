@@ -19,6 +19,7 @@ data class CatalogUiState(
     val activeCategory: String = "All",
     val searchQuery: String = "",
     val isLoading: Boolean = true,
+    val isOffline: Boolean = false,
 )
 
 @HiltViewModel

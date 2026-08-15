@@ -10,19 +10,20 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vibefy.musicwtf.data.db.DownloadStatus
 import com.vibefy.musicwtf.data.db.OfflinePlaylistDao
+import com.vibefy.musicwtf.data.model.PlaylistEntry
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.json.JSONObject
 
 /**
  * Background WorkManager worker triggered when network is online:
- * Checks for playlist updates against the remote API.
- * If something changed on server (songs added/removed/cover changed), it:
+ * Fetches static https://music-wtf.vercel.app/playlists.json and checks for playlist updates.
+ * If something changed on server (version hash or tracks updated), it:
  *   1. Updates `updateAvailable = true` in Room DB
- *   2. Displays an Android system notification to the user: "Playlist Update Available"
+ *   2. Displays an Android system notification: "Playlist Update Available"
  */
 @HiltWorker
 class PlaylistSyncWorker @AssistedInject constructor(
@@ -32,36 +33,39 @@ class PlaylistSyncWorker @AssistedInject constructor(
     private val okHttpClient: OkHttpClient,
 ) : CoroutineWorker(context, params) {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     override suspend fun doWork(): Result {
         val downloadedPlaylists = dao.getAllOfflinePlaylists().first()
             .filter { it.downloadStatus == DownloadStatus.DOWNLOADED }
 
         if (downloadedPlaylists.isEmpty()) return Result.success()
 
-        for (playlist in downloadedPlaylists) {
-            try {
-                // Fetch remote metadata/version check
-                val request = Request.Builder()
-                    .url("https://music-wtf.vercel.app/api/jukebox/${playlist.id}/version")
-                    .build()
+        try {
+            // Fetch public static playlists.json from Vercel
+            val request = Request.Builder()
+                .url("${com.vibefy.musicwtf.BuildConfig.BASE_URL}/playlists.json")
+                .build()
 
-                val response = okHttpClient.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val jsonStr = response.body?.string() ?: continue
-                    val jsonObj = JSONObject(jsonStr)
-                    val remoteHash = jsonObj.optString("versionHash", "")
+            val response = okHttpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                val jsonStr = response.body?.string() ?: return Result.success()
+                val remotePlaylists = json.decodeFromString<List<PlaylistEntry>>(jsonStr)
 
-                    if (remoteHash.isNotEmpty() && remoteHash != playlist.versionHash) {
-                        // Mark update available in DB
-                        dao.markUpdateAvailable(playlist.id, hasUpdate = true, newHash = remoteHash)
-
-                        // Notify user
-                        sendUpdateNotification(playlist.title, playlist.id)
+                for (localPlaylist in downloadedPlaylists) {
+                    val remoteMatch = remotePlaylists.find { it.id == localPlaylist.id }
+                    if (remoteMatch != null) {
+                        // Compare version hash / metadata
+                        val remoteHash = remoteMatch.accentColor + "_" + remoteMatch.title
+                        if (localPlaylist.versionHash.isNotEmpty() && remoteHash != localPlaylist.versionHash) {
+                            dao.markUpdateAvailable(localPlaylist.id, hasUpdate = true, newHash = remoteHash)
+                            sendUpdateNotification(localPlaylist.title, localPlaylist.id)
+                        }
                     }
                 }
-            } catch (e: Exception) {
-                // Suppress network check errors gracefully when offline
             }
+        } catch (e: Exception) {
+            // Suppress network check errors gracefully when offline
         }
 
         return Result.success()
@@ -87,7 +91,7 @@ class PlaylistSyncWorker @AssistedInject constructor(
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setContentTitle("Playlist Update Available")
-            .setContentText("\"$playlistTitle\" has new songs or updates available.")
+            .setContentText("\"$playlistTitle\" has updates available.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()

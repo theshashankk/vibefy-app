@@ -93,6 +93,28 @@ fun CatalogScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
 
+            // ── Offline Mode Status Pill ──────────────────────────
+            if (uiState.isOffline) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Amber.copy(alpha = 0.15f))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text("⚡", fontSize = 14.sp)
+                        Text(
+                            "Offline Mode — Showing Cached Playlists",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Amber,
+                        )
+                    }
+                }
+            }
+
             // ── Search bar ────────────────────────────────────────
             item(span = { GridItemSpan(maxLineSpan) }) {
                 IosSearchBar(

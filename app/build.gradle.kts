@@ -17,12 +17,28 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+
+        // Dynamic domain base URL — change here for future domain migrations
+        buildConfigField("String", "BASE_URL", "\"https://music-wtf.vercel.app\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            val ksFile = System.getenv("KEYSTORE_FILE") ?: "keystore.jks"
+            if (file(ksFile).exists()) {
+                storeFile = file(ksFile)
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "musicwtf123"
+                keyAlias = System.getenv("KEY_ALIAS") ?: "musicwtf"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "musicwtf123"
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
